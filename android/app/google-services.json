@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "897091512915",
+    "project_id": "greenbasket-68707",
+    "storage_bucket": "greenbasket-68707.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897091512915:android:e67cc31ee38aa273bdf4a6",
+        "android_client_info": {
+          "package_name": "com.green011basket.green_basket"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtDv2aJnYv6Uzg-rqrSKZ1HGH941B7tpc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
