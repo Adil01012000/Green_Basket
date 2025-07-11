@@ -44,6 +44,10 @@ class _AdminDashboardState extends State<AdminDashboard>
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.shortestSide > 600;
+    final maxContentWidth = isTablet ? 1200.0 : double.infinity;
+    final padding = isTablet ? 32.0 : 20.0;
+
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -52,15 +56,18 @@ class _AdminDashboardState extends State<AdminDashboard>
           automaticallyImplyLeading: false,
           backgroundColor: _primaryGreen,
           foregroundColor: Colors.white,
-          title: const Text(
+          title: Text(
             'Admin Dashboard',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: isTablet ? 28 : 20,
+            ),
           ),
           elevation: 0,
           actions: [
             IconButton(
+              icon: Icon(Icons.logout_rounded, size: isTablet ? 30 : 24),
               tooltip: 'Logout',
-              icon: const Icon(Icons.logout_rounded),
               onPressed: () async {
                 await AuthService().signOut();
                 if (!mounted) return;
@@ -73,20 +80,19 @@ class _AdminDashboardState extends State<AdminDashboard>
           ],
         ),
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth > 600;
-
-                return Column(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxContentWidth),
+              child: Padding(
+                padding: EdgeInsets.all(padding),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SlideTransition(
                       position: _slideAnimation,
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(20),
+                        padding: EdgeInsets.all(isTablet ? 32 : 20),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [_primaryGreen, _accentGreen],
@@ -105,19 +111,19 @@ class _AdminDashboardState extends State<AdminDashboard>
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: EdgeInsets.all(isTablet ? 16 : 12),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.admin_panel_settings_rounded,
                                 color: Colors.white,
-                                size: 24,
+                                size: isTablet ? 32 : 24,
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            const Expanded(
+                            SizedBox(width: isTablet ? 20 : 12),
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -125,7 +131,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                                     'Welcome, Admin!',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20,
+                                      fontSize: isTablet ? 28 : 20,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -133,7 +139,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                                     'Manage your store efficiently',
                                     style: TextStyle(
                                       color: Colors.white70,
-                                      fontSize: 14,
+                                      fontSize: isTablet ? 18 : 14,
                                     ),
                                   ),
                                 ],
@@ -143,44 +149,48 @@ class _AdminDashboardState extends State<AdminDashboard>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 30),
+                    SizedBox(height: isTablet ? 40 : 30),
 
-                    const Text(
+                    Text(
                       'Quick Actions',
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: isTablet ? 28 : 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: isTablet ? 24 : 16),
 
                     Expanded(
                       child: GridView.count(
-                        crossAxisCount: isWide ? 3 : 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.1,
+                        padding: EdgeInsets.symmetric(vertical: padding / 2),
+                        crossAxisCount: isTablet ? 4 : 2,
+                        crossAxisSpacing: isTablet ? 24 : 16,
+                        mainAxisSpacing: isTablet ? 24 : 16,
+                        childAspectRatio: isTablet ? 1.0 : 1.1,
                         children: [
                           _ActionCard(
-                            title: 'Add Category',
+                            title: 'Categories',
                             icon: Icons.category_rounded,
                             color: _primaryGreen,
                             animationDelay: 200,
+                            isTablet: isTablet,
                             onTap: () {
-                              Navigator.pushReplacement(
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CategoryListScreen(),
+                                  builder: (context) =>
+                                      const CategoryListScreen(),
                                 ),
                               );
                             },
                           ),
                           _ActionCard(
-                            title: 'Add Products',
+                            title: 'Products',
                             icon: Icons.shopping_basket_rounded,
                             color: _accentGreen,
                             animationDelay: 400,
+                            isTablet: isTablet,
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -188,12 +198,30 @@ class _AdminDashboardState extends State<AdminDashboard>
                               ),
                             ),
                           ),
+                          if (isTablet) ...[
+                            _ActionCard(
+                              title: 'Orders',
+                              icon: Icons.list_alt_rounded,
+                              color: Colors.orange,
+                              animationDelay: 600,
+                              isTablet: isTablet,
+                              onTap: () {},
+                            ),
+                            _ActionCard(
+                              title: 'Analytics',
+                              icon: Icons.analytics_rounded,
+                              color: Colors.blue,
+                              animationDelay: 800,
+                              isTablet: isTablet,
+                              onTap: () {},
+                            ),
+                          ],
                         ],
                       ),
                     ),
                   ],
-                );
-              },
+                ),
+              ),
             ),
           ),
         ),
@@ -208,6 +236,7 @@ class _ActionCard extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.animationDelay,
+    required this.isTablet,
     required this.onTap,
   });
 
@@ -215,6 +244,7 @@ class _ActionCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final int animationDelay;
+  final bool isTablet;
   final VoidCallback onTap;
 
   @override
@@ -240,24 +270,24 @@ class _ActionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(isTablet ? 24 : 20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(isTablet ? 20 : 16),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(icon, size: 32, color: color),
+                  child: Icon(icon, size: isTablet ? 40 : 32, color: color),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: isTablet ? 16 : 12),
                 Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: isTablet ? 20 : 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
