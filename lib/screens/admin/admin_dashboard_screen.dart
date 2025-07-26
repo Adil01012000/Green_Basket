@@ -19,6 +19,11 @@ class _AdminDashboardState extends State<AdminDashboard>
   static const Color _primaryGreen = Color(0xFF4CAF50);
   static const Color _accentGreen = Color(0xFF81C784);
 
+  // Responsive breakpoints
+  static const double _mobileBreakpoint = 600;
+  static const double _tabletBreakpoint = 1024;
+  static const double _desktopBreakpoint = 1440;
+
   @override
   void initState() {
     super.initState();
@@ -42,11 +47,89 @@ class _AdminDashboardState extends State<AdminDashboard>
     super.dispose();
   }
 
+  // Responsive helpers
+  bool _isMobile(BuildContext context) =>
+      MediaQuery.of(context).size.width < _mobileBreakpoint;
+  bool _isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.width >= _mobileBreakpoint &&
+      MediaQuery.of(context).size.width < _tabletBreakpoint;
+  bool _isDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width >= _desktopBreakpoint;
+
+  double _getMaxContentWidth(BuildContext context) {
+    if (_isMobile(context)) return double.infinity;
+    if (_isTablet(context)) return 900.0;
+    if (_isDesktop(context)) return 1200.0;
+    return 1000.0;
+  }
+
+  double _getPadding(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 32.0;
+    if (_isDesktop(context)) return 48.0;
+    return 24.0;
+  }
+
+  double _getHeaderFontSize(BuildContext context) {
+    if (_isMobile(context)) return 20.0;
+    if (_isTablet(context)) return 28.0;
+    if (_isDesktop(context)) return 32.0;
+    return 24.0;
+  }
+
+  double _getWelcomeFontSize(BuildContext context) {
+    if (_isMobile(context)) return 20.0;
+    if (_isTablet(context)) return 28.0;
+    if (_isDesktop(context)) return 32.0;
+    return 24.0;
+  }
+
+  double _getQuickActionsFontSize(BuildContext context) {
+    if (_isMobile(context)) return 22.0;
+    if (_isTablet(context)) return 28.0;
+    if (_isDesktop(context)) return 32.0;
+    return 24.0;
+  }
+
+  int _getGridCount(BuildContext context) {
+    if (_isMobile(context)) return 2;
+    if (_isTablet(context)) return 4;
+    if (_isDesktop(context)) return 6;
+    return 3;
+  }
+
+  double _getGridSpacing(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 24.0;
+    if (_isDesktop(context)) return 32.0;
+    return 20.0;
+  }
+
+  double _getHeaderCardPadding(BuildContext context) {
+    if (_isMobile(context)) return 20.0;
+    if (_isTablet(context)) return 32.0;
+    if (_isDesktop(context)) return 40.0;
+    return 24.0;
+  }
+
+  double _getHeaderCardRadius(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 20.0;
+    if (_isDesktop(context)) return 24.0;
+    return 18.0;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.shortestSide > 600;
-    final maxContentWidth = isTablet ? 1200.0 : double.infinity;
-    final padding = isTablet ? 32.0 : 20.0;
+    final maxContentWidth = _getMaxContentWidth(context);
+    final padding = _getPadding(context);
+    final headerFontSize = _getHeaderFontSize(context);
+    final welcomeFontSize = _getWelcomeFontSize(context);
+    final quickActionsFontSize = _getQuickActionsFontSize(context);
+    final gridCount = _getGridCount(context);
+    final gridSpacing = _getGridSpacing(context);
+    final headerCardPadding = _getHeaderCardPadding(context);
+    final headerCardRadius = _getHeaderCardRadius(context);
 
     return PopScope(
       canPop: false,
@@ -60,13 +143,13 @@ class _AdminDashboardState extends State<AdminDashboard>
             'Admin Dashboard',
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: isTablet ? 28 : 20,
+              fontSize: headerFontSize,
             ),
           ),
           elevation: 0,
           actions: [
             IconButton(
-              icon: Icon(Icons.logout_rounded, size: isTablet ? 30 : 24),
+              icon: Icon(Icons.logout_rounded, size: headerFontSize),
               tooltip: 'Logout',
               onPressed: () async {
                 await AuthService().signOut();
@@ -92,14 +175,14 @@ class _AdminDashboardState extends State<AdminDashboard>
                       position: _slideAnimation,
                       child: Container(
                         width: double.infinity,
-                        padding: EdgeInsets.all(isTablet ? 32 : 20),
+                        padding: EdgeInsets.all(headerCardPadding),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [_primaryGreen, _accentGreen],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(headerCardRadius),
                           boxShadow: [
                             BoxShadow(
                               color: _primaryGreen.withOpacity(0.3),
@@ -111,7 +194,9 @@ class _AdminDashboardState extends State<AdminDashboard>
                         child: Row(
                           children: [
                             Container(
-                              padding: EdgeInsets.all(isTablet ? 16 : 12),
+                              padding: EdgeInsets.all(
+                                _isTablet(context) ? 16 : 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(12),
@@ -119,10 +204,14 @@ class _AdminDashboardState extends State<AdminDashboard>
                               child: Icon(
                                 Icons.admin_panel_settings_rounded,
                                 color: Colors.white,
-                                size: isTablet ? 32 : 24,
+                                size: _isTablet(context)
+                                    ? 32
+                                    : _isDesktop(context)
+                                    ? 40
+                                    : 24,
                               ),
                             ),
-                            SizedBox(width: isTablet ? 20 : 12),
+                            SizedBox(width: _isTablet(context) ? 20 : 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,7 +220,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                                     'Welcome, Admin!',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: isTablet ? 28 : 20,
+                                      fontSize: welcomeFontSize,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -139,7 +228,11 @@ class _AdminDashboardState extends State<AdminDashboard>
                                     'Manage your store efficiently',
                                     style: TextStyle(
                                       color: Colors.white70,
-                                      fontSize: isTablet ? 18 : 14,
+                                      fontSize: _isTablet(context)
+                                          ? 18
+                                          : _isDesktop(context)
+                                          ? 20
+                                          : 14,
                                     ),
                                   ),
                                 ],
@@ -149,32 +242,36 @@ class _AdminDashboardState extends State<AdminDashboard>
                         ),
                       ),
                     ),
-                    SizedBox(height: isTablet ? 40 : 30),
+                    SizedBox(height: _isTablet(context) ? 40 : 30),
 
                     Text(
                       'Quick Actions',
                       style: TextStyle(
-                        fontSize: isTablet ? 28 : 22,
+                        fontSize: quickActionsFontSize,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
-                    SizedBox(height: isTablet ? 24 : 16),
+                    SizedBox(height: _isTablet(context) ? 24 : 16),
 
                     Expanded(
                       child: GridView.count(
                         padding: EdgeInsets.symmetric(vertical: padding / 2),
-                        crossAxisCount: isTablet ? 4 : 2,
-                        crossAxisSpacing: isTablet ? 24 : 16,
-                        mainAxisSpacing: isTablet ? 24 : 16,
-                        childAspectRatio: isTablet ? 1.0 : 1.1,
+                        crossAxisCount: gridCount,
+                        crossAxisSpacing: gridSpacing,
+                        mainAxisSpacing: gridSpacing,
+                        childAspectRatio: _isMobile(context)
+                            ? 1.1
+                            : _isTablet(context)
+                            ? 1.0
+                            : 0.95,
                         children: [
                           _ActionCard(
                             title: 'Categories',
                             icon: Icons.category_rounded,
                             color: _primaryGreen,
                             animationDelay: 200,
-                            isTablet: isTablet,
+                            isTablet: _isTablet(context) || _isDesktop(context),
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -190,7 +287,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                             icon: Icons.shopping_basket_rounded,
                             color: _accentGreen,
                             animationDelay: 400,
-                            isTablet: isTablet,
+                            isTablet: _isTablet(context) || _isDesktop(context),
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -198,13 +295,14 @@ class _AdminDashboardState extends State<AdminDashboard>
                               ),
                             ),
                           ),
-                          if (isTablet) ...[
+                          if (!_isMobile(context)) ...[
                             _ActionCard(
                               title: 'Orders',
                               icon: Icons.list_alt_rounded,
                               color: Colors.orange,
                               animationDelay: 600,
-                              isTablet: isTablet,
+                              isTablet:
+                                  _isTablet(context) || _isDesktop(context),
                               onTap: () {},
                             ),
                             _ActionCard(
@@ -212,7 +310,8 @@ class _AdminDashboardState extends State<AdminDashboard>
                               icon: Icons.analytics_rounded,
                               color: Colors.blue,
                               animationDelay: 800,
-                              isTablet: isTablet,
+                              isTablet:
+                                  _isTablet(context) || _isDesktop(context),
                               onTap: () {},
                             ),
                           ],

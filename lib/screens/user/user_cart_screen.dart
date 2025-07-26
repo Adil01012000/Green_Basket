@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../models/Cart.dart';
 import '../user/user_checkout_screen.dart';
 
@@ -36,17 +37,6 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.shortestSide > 600;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final padding = isTablet ? screenWidth * 0.06 : screenWidth * 0.04;
-    final maxContentWidth = isTablet ? 700.0 : double.infinity;
-    final fontScale = isTablet
-        ? 1.3
-        : screenWidth < 400
-        ? 0.9
-        : 1.0;
-
     double total = widget.cartItems.fold(
       0.0,
       (sum, item) => sum + item.price * item.quantity,
@@ -55,328 +45,228 @@ class _CartScreenState extends State<CartScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFE8F5E8),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxContentWidth),
-              child: Padding(
-                padding: EdgeInsets.all(padding),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(padding * 0.5),
-                    boxShadow: isTablet
-                        ? [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ]
-                        : null,
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            children: [
+              // Header with back button
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Colors.grey,
+                      size: 24.w,
+                    ),
+                    onPressed: () => Navigator.pop(context, 'updated'),
                   ),
-                  child: Padding(
-                    padding: EdgeInsets.all(padding * 0.8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header with back button
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.arrow_back,
-                                color: Colors.grey,
-                                size: isTablet ? 32 : 24,
-                              ),
-                              onPressed: () =>
-                                  Navigator.pop(context, 'updated'),
-                            ),
-                            SizedBox(width: padding * 0.5),
-                            Text(
-                              'Your Cart',
-                              style: TextStyle(
-                                fontSize: isTablet ? 28 : 22 * fontScale,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: isTablet ? 30 : screenHeight * 0.03),
+                  SizedBox(width: 12.w),
+                  Text(
+                    'Your Cart',
+                    style: TextStyle(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 24.h),
 
-                        // Cart Items List
-                        Expanded(
-                          child: widget.cartItems.isEmpty
-                              ? Center(
-                                  child: Text(
-                                    'Your cart is empty',
-                                    style: TextStyle(
-                                      fontSize: isTablet ? 22 : 16 * fontScale,
+              // Cart Items List
+              Expanded(
+                child: widget.cartItems.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Your cart is empty',
+                          style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: widget.cartItems.length,
+                        separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                        itemBuilder: (_, index) {
+                          final item = widget.cartItems[index];
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8F5E8),
+                              borderRadius: BorderRadius.circular(12.w),
+                            ),
+                            padding: EdgeInsets.all(16.w),
+                            child: Row(
+                              children: [
+                                // Product Image
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.w),
+                                  child: Image.network(
+                                    item.imageUrl,
+                                    width: 80.w,
+                                    height: 80.w,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      Icons.fastfood,
+                                      size: 40.w,
                                       color: Colors.grey,
                                     ),
                                   ),
-                                )
-                              : ListView.separated(
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  itemCount: widget.cartItems.length,
-                                  separatorBuilder: (_, __) =>
-                                      SizedBox(height: isTablet ? 20 : 12),
-                                  itemBuilder: (_, index) {
-                                    final item = widget.cartItems[index];
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFE8F5E8),
-                                        borderRadius: BorderRadius.circular(
-                                          padding * 0.3,
+                                ),
+                                SizedBox(width: 16.w),
+
+                                // Product Details
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.name,
+                                        style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      padding: EdgeInsets.all(
-                                        isTablet ? 20 : padding * 0.5,
+                                      SizedBox(height: 4.h),
+                                      Text(
+                                        'Weight: ${item.weight}',
+                                        style: TextStyle(
+                                          fontSize: 14.sp,
+                                          color: Colors.grey[700],
+                                        ),
                                       ),
-                                      child: Row(
+                                      SizedBox(height: 8.h),
+
+                                      // Quantity Controls
+                                      Row(
                                         children: [
-                                          // Product Image
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                              padding * 0.2,
-                                            ),
-                                            child: Image.network(
-                                              item.imageUrl,
-                                              width: isTablet
-                                                  ? 100
-                                                  : screenWidth * 0.15,
-                                              height: isTablet
-                                                  ? 100
-                                                  : screenWidth * 0.15,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) =>
-                                                  Icon(
-                                                    Icons.fastfood,
-                                                    size: isTablet
-                                                        ? 50
-                                                        : screenWidth * 0.1,
-                                                    color: Colors.grey,
-                                                  ),
+                                          GestureDetector(
+                                            onTap: () => decreaseQuantity(item),
+                                            child: CircleAvatar(
+                                              radius: 16.w,
+                                              backgroundColor: Colors.green,
+                                              child: Icon(
+                                                Icons.remove,
+                                                size: 16.w,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
-                                          SizedBox(
-                                            width: isTablet
-                                                ? 20
-                                                : padding * 0.5,
-                                          ),
-
-                                          // Product Details
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  item.name,
-                                                  style: TextStyle(
-                                                    fontSize: isTablet
-                                                        ? 22
-                                                        : 16 * fontScale,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  height: isTablet ? 8 : 4,
-                                                ),
-                                                Text(
-                                                  'Weight: ${item.weight}',
-                                                  style: TextStyle(
-                                                    fontSize: isTablet
-                                                        ? 18
-                                                        : 14 * fontScale,
-                                                    color: Colors.grey[700],
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  height: isTablet ? 12 : 6,
-                                                ),
-
-                                                // Quantity Controls
-                                                Row(
-                                                  children: [
-                                                    GestureDetector(
-                                                      onTap: () =>
-                                                          decreaseQuantity(
-                                                            item,
-                                                          ),
-                                                      child: CircleAvatar(
-                                                        radius: isTablet
-                                                            ? 20
-                                                            : screenWidth *
-                                                                  0.04,
-                                                        backgroundColor:
-                                                            Colors.green,
-                                                        child: Icon(
-                                                          Icons.remove,
-                                                          size: isTablet
-                                                              ? 24
-                                                              : screenWidth *
-                                                                    0.04,
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      width: isTablet
-                                                          ? 16
-                                                          : padding * 0.5,
-                                                    ),
-                                                    Text(
-                                                      '${item.quantity}',
-                                                      style: TextStyle(
-                                                        fontSize: isTablet
-                                                            ? 22
-                                                            : 16 * fontScale,
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      width: isTablet
-                                                          ? 16
-                                                          : padding * 0.5,
-                                                    ),
-                                                    GestureDetector(
-                                                      onTap: () =>
-                                                          increaseQuantity(
-                                                            item,
-                                                          ),
-                                                      child: CircleAvatar(
-                                                        radius: isTablet
-                                                            ? 20
-                                                            : screenWidth *
-                                                                  0.04,
-                                                        backgroundColor:
-                                                            Colors.green,
-                                                        child: Icon(
-                                                          Icons.add,
-                                                          size: isTablet
-                                                              ? 24
-                                                              : screenWidth *
-                                                                    0.04,
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
+                                          SizedBox(width: 12.w),
+                                          Text(
+                                            '${item.quantity}',
+                                            style: TextStyle(
+                                              fontSize: 16.sp,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-
-                                          // Price and Delete
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                'Rs ${(item.price * item.quantity).toStringAsFixed(2)}',
-                                                style: TextStyle(
-                                                  fontSize: isTablet
-                                                      ? 22
-                                                      : 16 * fontScale,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.green,
-                                                ),
+                                          SizedBox(width: 12.w),
+                                          GestureDetector(
+                                            onTap: () => increaseQuantity(item),
+                                            child: CircleAvatar(
+                                              radius: 16.w,
+                                              backgroundColor: Colors.green,
+                                              child: Icon(
+                                                Icons.add,
+                                                size: 16.w,
+                                                color: Colors.white,
                                               ),
-                                              SizedBox(
-                                                height: isTablet ? 10 : 6,
-                                              ),
-                                              IconButton(
-                                                icon: Icon(
-                                                  Icons.delete,
-                                                  color: Colors.red,
-                                                  size: isTablet
-                                                      ? 30
-                                                      : screenWidth * 0.06,
-                                                ),
-                                                onPressed: () =>
-                                                    removeItem(item),
-                                              ),
-                                            ],
+                                            ),
                                           ),
                                         ],
                                       ),
-                                    );
-                                  },
-                                ),
-                        ),
-
-                        // Checkout Section (only shown if cart has items)
-                        if (widget.cartItems.isNotEmpty) ...[
-                          SizedBox(height: isTablet ? 30 : screenHeight * 0.02),
-                          Divider(thickness: 1, height: 1),
-                          SizedBox(height: isTablet ? 20 : screenHeight * 0.02),
-
-                          // Total Price
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Total:',
-                                style: TextStyle(
-                                  fontSize: isTablet ? 26 : 18 * fontScale,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                'Rs ${total.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  fontSize: isTablet ? 26 : 18 * fontScale,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: isTablet ? 30 : screenHeight * 0.02),
-
-                          // Checkout Button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                padding: EdgeInsets.symmetric(
-                                  vertical: isTablet ? 20 : screenHeight * 0.02,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    padding * 0.3,
+                                    ],
                                   ),
                                 ),
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => CheckoutScreen(
-                                      cartItems: widget.cartItems,
+
+                                // Price and Delete
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      'Rs ${(item.price * item.quantity).toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                'Checkout',
-                                style: TextStyle(
-                                  fontSize: isTablet ? 22 : 16 * fontScale,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                    SizedBox(height: 8.h),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                        size: 20.w,
+                                      ),
+                                      onPressed: () => removeItem(item),
+                                    ),
+                                  ],
                                 ),
-                              ),
+                              ],
                             ),
-                          ),
-                        ],
-                      ],
+                          );
+                        },
+                      ),
+              ),
+
+              // Checkout Section (only shown if cart has items)
+              if (widget.cartItems.isNotEmpty) ...[
+                SizedBox(height: 24.h),
+                Divider(thickness: 1, height: 1),
+                SizedBox(height: 16.h),
+
+                // Total Price
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total:',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Rs ${total.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 24.h),
+
+                // Checkout Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48.h,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.w),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CheckoutScreen(cartItems: widget.cartItems),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Checkout',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
+              ],
+            ],
           ),
         ),
       ),

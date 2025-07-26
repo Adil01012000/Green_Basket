@@ -14,6 +14,90 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
   late Future<List<Map<String, dynamic>>> _ordersFuture;
   bool _isRefreshing = false;
 
+  // Responsive breakpoints
+  static const double _mobileBreakpoint = 600;
+  static const double _tabletBreakpoint = 1024;
+  static const double _desktopBreakpoint = 1440;
+
+  // Responsive helpers
+  bool _isMobile(BuildContext context) =>
+      MediaQuery.of(context).size.width < _mobileBreakpoint;
+  bool _isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.width >= _mobileBreakpoint &&
+      MediaQuery.of(context).size.width < _tabletBreakpoint;
+  bool _isDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width >= _desktopBreakpoint;
+
+  double _getMaxContentWidth(BuildContext context) {
+    if (_isMobile(context)) return double.infinity;
+    if (_isTablet(context)) return 800.0;
+    if (_isDesktop(context)) return 1000.0;
+    return 900.0;
+  }
+
+  double _getPadding(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 28.0;
+    if (_isDesktop(context)) return 40.0;
+    return 20.0;
+  }
+
+  double _getHeaderFontSize(BuildContext context) {
+    if (_isMobile(context)) return 20.0;
+    if (_isTablet(context)) return 24.0;
+    if (_isDesktop(context)) return 28.0;
+    return 22.0;
+  }
+
+  double _getCardRadius(BuildContext context) {
+    if (_isMobile(context)) return 12.0;
+    if (_isTablet(context)) return 18.0;
+    if (_isDesktop(context)) return 24.0;
+    return 16.0;
+  }
+
+  double _getCardPadding(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 24.0;
+    if (_isDesktop(context)) return 32.0;
+    return 20.0;
+  }
+
+  double _getChipFontSize(BuildContext context) {
+    if (_isMobile(context)) return 14.0;
+    if (_isTablet(context)) return 16.0;
+    if (_isDesktop(context)) return 18.0;
+    return 15.0;
+  }
+
+  double _getOrderIdFontSize(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 20.0;
+    if (_isDesktop(context)) return 22.0;
+    return 18.0;
+  }
+
+  double _getInfoFontSize(BuildContext context) {
+    if (_isMobile(context)) return 14.0;
+    if (_isTablet(context)) return 18.0;
+    if (_isDesktop(context)) return 20.0;
+    return 16.0;
+  }
+
+  double _getItemFontSize(BuildContext context) {
+    if (_isMobile(context)) return 14.0;
+    if (_isTablet(context)) return 16.0;
+    if (_isDesktop(context)) return 18.0;
+    return 15.0;
+  }
+
+  double _getIconSize(BuildContext context) {
+    if (_isMobile(context)) return 24.0;
+    if (_isTablet(context)) return 30.0;
+    if (_isDesktop(context)) return 36.0;
+    return 26.0;
+  }
+
   Future<List<Map<String, dynamic>>> fetchOrders() async {
     try {
       final snapshot = await FirebaseFirestore.instance
@@ -73,6 +157,11 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(_getCardRadius(context)),
+        ),
+      ),
       builder: (_) {
         return SafeArea(
           child: SingleChildScrollView(
@@ -88,7 +177,7 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                     child: Text(
                       'Update Order Status',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: _getHeaderFontSize(context),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -102,11 +191,12 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                             ? Icons.radio_button_checked
                             : Icons.radio_button_unchecked,
                         color: _getStatusColor(status),
+                        size: _getIconSize(context),
                       ),
                       title: Text(
                         status,
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: _getInfoFontSize(context),
                           fontWeight: isSelected
                               ? FontWeight.bold
                               : FontWeight.normal,
@@ -115,6 +205,7 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                       trailing: Icon(
                         _getStatusIcon(status),
                         color: _getStatusColor(status),
+                        size: _getIconSize(context),
                       ),
                       onTap: () async {
                         Navigator.pop(context);
@@ -176,14 +267,21 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.shortestSide > 600;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final padding = isTablet ? screenWidth * 0.05 : screenWidth * 0.04;
-    final maxContentWidth = isTablet ? 800.0 : double.infinity;
+    final maxContentWidth = _getMaxContentWidth(context);
+    final padding = _getPadding(context);
+    final headerFontSize = _getHeaderFontSize(context);
+    final cardRadius = _getCardRadius(context);
+    final cardPadding = _getCardPadding(context);
+    final chipFontSize = _getChipFontSize(context);
+    final orderIdFontSize = _getOrderIdFontSize(context);
+    final infoFontSize = _getInfoFontSize(context);
+    final itemFontSize = _getItemFontSize(context);
+    final iconSize = _getIconSize(context);
 
     return PopScope(
       canPop: false,
       child: Scaffold(
+        backgroundColor: Colors.grey[50],
         appBar: AppBar(
           automaticallyImplyLeading: false,
           backgroundColor: Colors.green,
@@ -191,25 +289,18 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
             'Rider Dashboard',
             style: TextStyle(
               color: Colors.white,
-              fontSize: isTablet ? 24 : 20,
+              fontSize: headerFontSize,
               fontWeight: FontWeight.bold,
             ),
           ),
           actions: [
             IconButton(
-              icon: Icon(
-                Icons.refresh,
-                color: Colors.white,
-                size: isTablet ? 30 : 24,
-              ),
+              icon: Icon(Icons.refresh, color: Colors.white, size: iconSize),
               onPressed: _refreshOrders,
+              tooltip: 'Refresh',
             ),
             IconButton(
-              icon: Icon(
-                Icons.logout,
-                color: Colors.white,
-                size: isTablet ? 30 : 24,
-              ),
+              icon: Icon(Icons.logout, color: Colors.white, size: iconSize),
               onPressed: () async {
                 await AuthService().signOut();
                 if (!mounted) return;
@@ -218,6 +309,7 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                   MaterialPageRoute(builder: (_) => const SignInScreen()),
                 );
               },
+              tooltip: 'Logout',
             ),
           ],
         ),
@@ -243,23 +335,23 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                         children: [
                           Icon(
                             Icons.assignment,
-                            size: 60,
+                            size: iconSize * 2.5,
                             color: Colors.grey[400],
                           ),
-                          SizedBox(height: 16),
+                          SizedBox(height: padding),
                           Text(
                             'No orders available',
                             style: TextStyle(
-                              fontSize: isTablet ? 22 : 18,
+                              fontSize: headerFontSize,
                               color: Colors.grey[600],
                             ),
                           ),
-                          SizedBox(height: 8),
+                          SizedBox(height: padding * 0.5),
                           TextButton(
                             onPressed: _refreshOrders,
                             child: Text(
                               'Refresh',
-                              style: TextStyle(fontSize: isTablet ? 18 : 16),
+                              style: TextStyle(fontSize: infoFontSize),
                             ),
                           ),
                         ],
@@ -283,10 +375,10 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                         child: Card(
                           elevation: 4,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(padding * 0.5),
+                            borderRadius: BorderRadius.circular(cardRadius),
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(padding),
+                            padding: EdgeInsets.all(cardPadding),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -298,14 +390,14 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                                       'Order ID: ${order['orderId']}',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: isTablet ? 20 : 16,
+                                        fontSize: orderIdFontSize,
                                       ),
                                     ),
                                     Chip(
                                       label: Text(
                                         status,
                                         style: TextStyle(
-                                          fontSize: isTablet ? 16 : 14,
+                                          fontSize: chipFontSize,
                                           fontWeight: FontWeight.bold,
                                           color: _getStatusColor(status),
                                         ),
@@ -322,28 +414,32 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: isTablet ? 12 : 8),
+                                SizedBox(height: padding * 0.5),
                                 _buildInfoRow(
                                   'Customer:',
                                   '${order['name']}',
-                                  isTablet: isTablet,
+                                  fontSize: infoFontSize,
+                                  padding: padding,
                                 ),
                                 _buildInfoRow(
                                   'Phone:',
                                   '${order['phone']}',
-                                  isTablet: isTablet,
+                                  fontSize: infoFontSize,
+                                  padding: padding,
                                 ),
                                 _buildInfoRow(
                                   'Address:',
                                   '${order['address']}',
-                                  isTablet: isTablet,
+                                  fontSize: infoFontSize,
+                                  padding: padding,
                                 ),
                                 _buildInfoRow(
                                   'Total:',
                                   '${order['total']}',
-                                  isTablet: isTablet,
+                                  fontSize: infoFontSize,
+                                  padding: padding,
                                 ),
-                                SizedBox(height: isTablet ? 12 : 8),
+                                SizedBox(height: padding * 0.5),
                                 if (order['items'] != null)
                                   Column(
                                     crossAxisAlignment:
@@ -353,19 +449,19 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                                         'Items:',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: isTablet ? 18 : 16,
+                                          fontSize: infoFontSize,
                                         ),
                                       ),
-                                      SizedBox(height: isTablet ? 8 : 4),
+                                      SizedBox(height: padding * 0.3),
                                       ...List.from(order['items']).map(
                                         (item) => Padding(
                                           padding: EdgeInsets.only(
-                                            bottom: isTablet ? 6 : 4,
+                                            bottom: padding * 0.2,
                                           ),
                                           child: Text(
                                             '• ${item['name']} (${item['weight']}) x${item['quantity']}',
                                             style: TextStyle(
-                                              fontSize: isTablet ? 16 : 14,
+                                              fontSize: itemFontSize,
                                             ),
                                           ),
                                         ),
@@ -388,12 +484,17 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, {required bool isTablet}) {
+  Widget _buildInfoRow(
+    String label,
+    String value, {
+    required double fontSize,
+    required double padding,
+  }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: isTablet ? 8 : 4),
+      padding: EdgeInsets.only(bottom: padding * 0.3),
       child: RichText(
         text: TextSpan(
-          style: TextStyle(fontSize: isTablet ? 18 : 14, color: Colors.black),
+          style: TextStyle(fontSize: fontSize, color: Colors.black),
           children: [
             TextSpan(
               text: '$label ',

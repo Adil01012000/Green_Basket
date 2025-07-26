@@ -10,26 +10,99 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
+  // Responsive breakpoints
+  static const double _mobileBreakpoint = 600;
+  static const double _tabletBreakpoint = 1024;
+  static const double _desktopBreakpoint = 1440;
+
+  // Responsive helpers
+  bool _isMobile(BuildContext context) =>
+      MediaQuery.of(context).size.width < _mobileBreakpoint;
+  bool _isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.width >= _mobileBreakpoint &&
+      MediaQuery.of(context).size.width < _tabletBreakpoint;
+  bool _isDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width >= _desktopBreakpoint;
+
+  double _getMaxContentWidth(BuildContext context) {
+    if (_isMobile(context)) return double.infinity;
+    if (_isTablet(context)) return 900.0;
+    if (_isDesktop(context)) return 1200.0;
+    return 1000.0;
+  }
+
+  double _getPadding(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 24.0;
+    if (_isDesktop(context)) return 32.0;
+    return 20.0;
+  }
+
+  double _getHeaderFontSize(BuildContext context) {
+    if (_isMobile(context)) return 20.0;
+    if (_isTablet(context)) return 24.0;
+    if (_isDesktop(context)) return 28.0;
+    return 22.0;
+  }
+
+  int _getGridCount(BuildContext context) {
+    if (_isMobile(context)) return 1;
+    if (_isTablet(context)) return 2;
+    if (_isDesktop(context)) return 3;
+    return 2;
+  }
+
+  double _getGridSpacing(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 24.0;
+    if (_isDesktop(context)) return 32.0;
+    return 20.0;
+  }
+
+  double _getCardPadding(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 20.0;
+    if (_isDesktop(context)) return 24.0;
+    return 18.0;
+  }
+
+  double _getCardRadius(BuildContext context) {
+    if (_isMobile(context)) return 12.0;
+    if (_isTablet(context)) return 16.0;
+    if (_isDesktop(context)) return 20.0;
+    return 14.0;
+  }
+
+  double _getImageSize(BuildContext context) {
+    if (_isMobile(context)) return 80.0;
+    if (_isTablet(context)) return 120.0;
+    if (_isDesktop(context)) return 140.0;
+    return 100.0;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.shortestSide > 600;
-    final maxContentWidth = isTablet ? 1000.0 : double.infinity;
-    final padding = isTablet ? 24.0 : 16.0;
+    final maxContentWidth = _getMaxContentWidth(context);
+    final padding = _getPadding(context);
+    final headerFontSize = _getHeaderFontSize(context);
 
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text(
           'Product List',
           style: TextStyle(
-            fontSize: isTablet ? 24 : 20,
+            fontSize: headerFontSize,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
+        elevation: 2,
         actions: [
           IconButton(
-            icon: Icon(Icons.add, size: isTablet ? 30 : 24),
+            icon: Icon(Icons.add, size: headerFontSize),
+            tooltip: 'Add Product',
             onPressed: () {
               Navigator.of(context)
                   .push(
@@ -50,25 +123,25 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return _buildErrorState(snapshot.error.toString(), isTablet);
+                return _buildErrorState(snapshot.error.toString(), context);
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return _buildLoadingState(isTablet);
+                return _buildLoadingState(context);
               }
 
               final products = snapshot.data?.docs ?? [];
 
               if (products.isEmpty) {
-                return _buildEmptyState(isTablet);
+                return _buildEmptyState(context);
               }
 
               return RefreshIndicator(
                 color: Color(0xFF4CAF50),
                 onRefresh: () async => setState(() {}),
-                child: isTablet
-                    ? _buildTabletGrid(products, padding)
-                    : _buildMobileList(products, padding),
+                child: _isMobile(context)
+                    ? _buildMobileList(products, context)
+                    : _buildTabletGrid(products, context),
               );
             },
           ),
@@ -79,44 +152,59 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   Widget _buildTabletGrid(
     List<QueryDocumentSnapshot> products,
-    double padding,
+    BuildContext context,
   ) {
+    final padding = _getPadding(context);
+    final gridCount = _getGridCount(context);
+    final gridSpacing = _getGridSpacing(context);
+
     return GridView.builder(
       padding: EdgeInsets.all(padding),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: padding,
-        mainAxisSpacing: padding,
-        childAspectRatio: 2.5,
+        crossAxisCount: gridCount,
+        crossAxisSpacing: gridSpacing,
+        mainAxisSpacing: gridSpacing,
+        childAspectRatio: _isDesktop(context) ? 2.8 : 2.5,
       ),
       itemCount: products.length,
-      itemBuilder: (context, index) => _buildProductCard(products[index], true),
+      itemBuilder: (context, index) =>
+          _buildProductCard(products[index], context),
     );
   }
 
   Widget _buildMobileList(
     List<QueryDocumentSnapshot> products,
-    double padding,
+    BuildContext context,
   ) {
+    final padding = _getPadding(context);
+
     return ListView.builder(
       padding: EdgeInsets.all(padding),
       itemCount: products.length,
       itemBuilder: (context, index) => Padding(
         padding: EdgeInsets.only(bottom: padding),
-        child: _buildProductCard(products[index], false),
+        child: _buildProductCard(products[index], context),
       ),
     );
   }
 
-  Widget _buildProductCard(QueryDocumentSnapshot product, bool isTablet) {
+  Widget _buildProductCard(
+    QueryDocumentSnapshot product,
+    BuildContext context,
+  ) {
     final data = product.data() as Map<String, dynamic>;
-    final cardPadding = isTablet ? 20.0 : 16.0;
+    final cardPadding = _getCardPadding(context);
+    final cardRadius = _getCardRadius(context);
+    final imageSize = _getImageSize(context);
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shadowColor: Colors.black.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(cardRadius),
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(cardRadius),
         onTap: () => _editProduct(product.id, data),
         child: Padding(
           padding: EdgeInsets.all(cardPadding),
@@ -124,7 +212,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Product Image
-              _buildProductImage(data, isTablet),
+              _buildProductImage(data, context, imageSize),
               SizedBox(width: cardPadding),
 
               // Product Details
@@ -132,19 +220,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildProductName(data, isTablet),
+                    _buildProductName(data, context),
                     if (data['categoryName'] != null)
-                      _buildCategoryTag(data, isTablet),
-                    SizedBox(height: isTablet ? 12 : 8),
-                    _buildPriceAndQuantity(data, isTablet),
+                      _buildCategoryTag(data, context),
+                    SizedBox(height: _isMobile(context) ? 8 : 12),
+                    _buildPriceAndQuantity(data, context),
                     if (data['createdAt'] != null)
-                      _buildDateAdded(data, isTablet),
+                      _buildDateAdded(data, context),
                   ],
                 ),
               ),
 
               // Action Menu
-              _buildActionMenu(product.id, data, isTablet),
+              _buildActionMenu(product.id, data, context),
             ],
           ),
         ),
@@ -152,11 +240,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildProductImage(Map<String, dynamic> data, bool isTablet) {
-    final size = isTablet ? 120.0 : 80.0;
-
+  Widget _buildProductImage(
+    Map<String, dynamic> data,
+    BuildContext context,
+    double size,
+  ) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(_getCardRadius(context) * 0.5),
       child: Container(
         width: size,
         height: size,
@@ -182,24 +272,26 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   return Icon(
                     Icons.broken_image,
                     color: Colors.grey[400],
-                    size: isTablet ? 48 : 32,
+                    size: size * 0.4,
                   );
                 },
               )
-            : Icon(
-                Icons.image,
-                color: Colors.grey[400],
-                size: isTablet ? 48 : 32,
-              ),
+            : Icon(Icons.image, color: Colors.grey[400], size: size * 0.4),
       ),
     );
   }
 
-  Widget _buildProductName(Map<String, dynamic> data, bool isTablet) {
+  Widget _buildProductName(Map<String, dynamic> data, BuildContext context) {
+    final fontSize = _isMobile(context)
+        ? 18.0
+        : _isTablet(context)
+        ? 22.0
+        : 24.0;
+
     return Text(
       data['name'] ?? 'Unknown Product',
       style: TextStyle(
-        fontSize: isTablet ? 22 : 18,
+        fontSize: fontSize,
         fontWeight: FontWeight.bold,
         color: Colors.black87,
       ),
@@ -208,7 +300,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildCategoryTag(Map<String, dynamic> data, bool isTablet) {
+  Widget _buildCategoryTag(Map<String, dynamic> data, BuildContext context) {
+    final isTablet = _isTablet(context) || _isDesktop(context);
+
     return Padding(
       padding: EdgeInsets.only(top: isTablet ? 8 : 4),
       child: Container(
@@ -232,41 +326,39 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildPriceAndQuantity(Map<String, dynamic> data, bool isTablet) {
+  Widget _buildPriceAndQuantity(
+    Map<String, dynamic> data,
+    BuildContext context,
+  ) {
+    final isTablet = _isTablet(context) || _isDesktop(context);
+    final fontSize = isTablet ? 18.0 : 16.0;
+    final iconSize = isTablet ? 20.0 : 16.0;
+
     return Row(
       children: [
-        Icon(
-          Icons.currency_rupee,
-          size: isTablet ? 20 : 16,
-          color: Colors.green[700],
-        ),
+        Icon(Icons.currency_rupee, size: iconSize, color: Colors.green[700]),
         Text(
           '${data['price']?.toStringAsFixed(0) ?? '0'}',
           style: TextStyle(
-            fontSize: isTablet ? 20 : 16,
+            fontSize: fontSize,
             fontWeight: FontWeight.bold,
             color: Colors.green[700],
           ),
         ),
         SizedBox(width: isTablet ? 24 : 16),
-        Icon(
-          Icons.inventory,
-          size: isTablet ? 20 : 16,
-          color: Colors.grey[600],
-        ),
+        Icon(Icons.inventory, size: iconSize, color: Colors.grey[600]),
         SizedBox(width: isTablet ? 8 : 4),
         Text(
           '${data['quantity']?.toString() ?? '0'} ${data['unit'] ?? ''}',
-          style: TextStyle(
-            fontSize: isTablet ? 18 : 14,
-            color: Colors.grey[600],
-          ),
+          style: TextStyle(fontSize: fontSize - 2, color: Colors.grey[600]),
         ),
       ],
     );
   }
 
-  Widget _buildDateAdded(Map<String, dynamic> data, bool isTablet) {
+  Widget _buildDateAdded(Map<String, dynamic> data, BuildContext context) {
+    final isTablet = _isTablet(context) || _isDesktop(context);
+
     return Padding(
       padding: EdgeInsets.only(top: isTablet ? 12 : 8),
       child: Text(
@@ -279,14 +371,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget _buildActionMenu(
     String productId,
     Map<String, dynamic> data,
-    bool isTablet,
+    BuildContext context,
   ) {
+    final isTablet = _isTablet(context) || _isDesktop(context);
+    final iconSize = isTablet ? 28.0 : 24.0;
+    final fontSize = isTablet ? 18.0 : 14.0;
+
     return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_vert,
-        color: Colors.grey[600],
-        size: isTablet ? 28 : 24,
-      ),
+      icon: Icon(Icons.more_vert, color: Colors.grey[600], size: iconSize),
       onSelected: (value) {
         switch (value) {
           case 'edit':
@@ -302,9 +394,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
           value: 'edit',
           child: Row(
             children: [
-              Icon(Icons.edit, size: isTablet ? 24 : 18, color: Colors.blue),
+              Icon(Icons.edit, size: iconSize * 0.8, color: Colors.blue),
               SizedBox(width: 12),
-              Text('Edit', style: TextStyle(fontSize: isTablet ? 18 : 14)),
+              Text('Edit', style: TextStyle(fontSize: fontSize)),
             ],
           ),
         ),
@@ -312,9 +404,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
           value: 'delete',
           child: Row(
             children: [
-              Icon(Icons.delete, size: isTablet ? 24 : 18, color: Colors.red),
+              Icon(Icons.delete, size: iconSize * 0.8, color: Colors.red),
               SizedBox(width: 12),
-              Text('Delete', style: TextStyle(fontSize: isTablet ? 18 : 14)),
+              Text('Delete', style: TextStyle(fontSize: fontSize)),
             ],
           ),
         ),
@@ -322,9 +414,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildErrorState(String error, bool isTablet) {
+  Widget _buildErrorState(String error, BuildContext context) {
+    final isTablet = _isTablet(context) || _isDesktop(context);
+    final padding = _getPadding(context);
+
     return Padding(
-      padding: EdgeInsets.all(24),
+      padding: EdgeInsets.all(padding),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -333,12 +428,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
             size: isTablet ? 80 : 64,
             color: Colors.red,
           ),
-          SizedBox(height: 24),
+          SizedBox(height: isTablet ? 24 : 16),
           Text(
             'Error loading products',
             style: TextStyle(fontSize: isTablet ? 24 : 18, color: Colors.red),
           ),
-          SizedBox(height: 12),
+          SizedBox(height: isTablet ? 16 : 12),
           Text(
             error,
             style: TextStyle(
@@ -347,12 +442,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 24),
+          SizedBox(height: isTablet ? 24 : 16),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF4CAF50),
               padding: EdgeInsets.symmetric(
-                horizontal: 24,
+                horizontal: isTablet ? 32 : 24,
                 vertical: isTablet ? 16 : 12,
               ),
             ),
@@ -370,12 +465,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildLoadingState(bool isTablet) {
+  Widget _buildLoadingState(BuildContext context) {
+    final isTablet = _isTablet(context) || _isDesktop(context);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CircularProgressIndicator(color: Color(0xFF4CAF50), strokeWidth: 3),
-        SizedBox(height: 24),
+        SizedBox(height: isTablet ? 24 : 16),
         Text(
           'Loading products...',
           style: TextStyle(
@@ -387,9 +484,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildEmptyState(bool isTablet) {
+  Widget _buildEmptyState(BuildContext context) {
+    final isTablet = _isTablet(context) || _isDesktop(context);
+    final padding = _getPadding(context);
+
     return Padding(
-      padding: EdgeInsets.all(24),
+      padding: EdgeInsets.all(padding),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -398,7 +498,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             size: isTablet ? 80 : 64,
             color: Colors.grey[400],
           ),
-          SizedBox(height: 24),
+          SizedBox(height: isTablet ? 24 : 16),
           Text(
             'No products found',
             style: TextStyle(
@@ -406,7 +506,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               color: Colors.grey[700],
             ),
           ),
-          SizedBox(height: 12),
+          SizedBox(height: isTablet ? 16 : 12),
           Text(
             'Tap the + button to add your first product',
             style: TextStyle(
@@ -461,18 +561,29 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   void _deleteProduct(String productId, String productName) {
+    final isTablet = _isTablet(context) || _isDesktop(context);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
           'Delete Product',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: isTablet ? 20 : 18,
+          ),
         ),
-        content: Text('Are you sure you want to delete "$productName"?'),
+        content: Text(
+          'Are you sure you want to delete "$productName"?',
+          style: TextStyle(fontSize: isTablet ? 16 : 14),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(fontSize: isTablet ? 16 : 14),
+            ),
           ),
           TextButton(
             onPressed: () async {
@@ -500,7 +611,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 );
               }
             },
-            child: Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(
+              'Delete',
+              style: TextStyle(color: Colors.red, fontSize: isTablet ? 16 : 14),
+            ),
           ),
         ],
       ),

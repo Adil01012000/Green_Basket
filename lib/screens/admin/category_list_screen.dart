@@ -17,6 +17,69 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   static const Color _primaryGreen = Color(0xFF4CAF50);
   static const Color _accentGreen = Color(0xFF81C784);
 
+  // Responsive breakpoints
+  static const double _mobileBreakpoint = 600;
+  static const double _tabletBreakpoint = 1024;
+  static const double _desktopBreakpoint = 1440;
+
+  // Responsive helpers
+  bool _isMobile(BuildContext context) =>
+      MediaQuery.of(context).size.width < _mobileBreakpoint;
+  bool _isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.width >= _mobileBreakpoint &&
+      MediaQuery.of(context).size.width < _tabletBreakpoint;
+  bool _isDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width >= _desktopBreakpoint;
+
+  double _getMaxContentWidth(BuildContext context) {
+    if (_isMobile(context)) return double.infinity;
+    if (_isTablet(context)) return 900.0;
+    if (_isDesktop(context)) return 1200.0;
+    return 1000.0;
+  }
+
+  double _getPadding(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 32.0;
+    if (_isDesktop(context)) return 48.0;
+    return 24.0;
+  }
+
+  double _getHeaderFontSize(BuildContext context) {
+    if (_isMobile(context)) return 20.0;
+    if (_isTablet(context)) return 24.0;
+    if (_isDesktop(context)) return 28.0;
+    return 22.0;
+  }
+
+  int _getGridCount(BuildContext context) {
+    if (_isMobile(context)) return 2;
+    if (_isTablet(context)) return 4;
+    if (_isDesktop(context)) return 6;
+    return 3;
+  }
+
+  double _getGridSpacing(BuildContext context) {
+    if (_isMobile(context)) return 12.0;
+    if (_isTablet(context)) return 24.0;
+    if (_isDesktop(context)) return 32.0;
+    return 16.0;
+  }
+
+  double _getCardPadding(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 24.0;
+    if (_isDesktop(context)) return 32.0;
+    return 20.0;
+  }
+
+  double _getCardRadius(BuildContext context) {
+    if (_isMobile(context)) return 16.0;
+    if (_isTablet(context)) return 20.0;
+    if (_isDesktop(context)) return 24.0;
+    return 18.0;
+  }
+
   @override
   void dispose() {
     _searchCtrl.dispose();
@@ -25,9 +88,11 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.shortestSide > 600;
-    final maxContentWidth = isTablet ? 1200.0 : double.infinity;
-    final padding = isTablet ? 24.0 : 16.0;
+    final maxContentWidth = _getMaxContentWidth(context);
+    final padding = _getPadding(context);
+    final headerFontSize = _getHeaderFontSize(context);
+    final gridCount = _getGridCount(context);
+    final gridSpacing = _getGridSpacing(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -39,12 +104,12 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
           'Categories',
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: isTablet ? 24 : 20,
+            fontSize: headerFontSize,
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add_rounded, size: isTablet ? 30 : 24),
+            icon: Icon(Icons.add_rounded, size: headerFontSize),
             tooltip: 'Add Category',
             onPressed: () => Navigator.push(
               context,
@@ -53,13 +118,13 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(isTablet ? 80 : 64),
+          preferredSize: Size.fromHeight(_isTablet(context) ? 80 : 64),
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-              isTablet ? 32 : 16,
+              padding,
               0,
-              isTablet ? 32 : 16,
-              isTablet ? 16 : 12,
+              padding,
+              _isTablet(context) ? 16 : 12,
             ),
             child: TextField(
               controller: _searchCtrl,
@@ -67,30 +132,30 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                 hintText: 'Search categories...',
                 filled: true,
                 fillColor: Colors.white,
-                prefixIcon: Icon(Icons.search, size: isTablet ? 28 : 24),
+                prefixIcon: Icon(Icons.search, size: headerFontSize),
                 suffixIcon: _query.isEmpty
                     ? null
                     : IconButton(
-                        icon: Icon(Icons.clear, size: isTablet ? 28 : 24),
+                        icon: Icon(Icons.clear, size: headerFontSize),
                         onPressed: () {
                           _searchCtrl.clear();
                           setState(() => _query = '');
                         },
                       ),
                 contentPadding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 24 : 16,
-                  vertical: isTablet ? 16 : 0,
+                  horizontal: _isTablet(context) ? 24 : 16,
+                  vertical: _isTablet(context) ? 16 : 0,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(_getCardRadius(context)),
                   borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(_getCardRadius(context)),
                   borderSide: BorderSide(color: _accentGreen.withOpacity(0.4)),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(_getCardRadius(context)),
                   borderSide: const BorderSide(color: _primaryGreen, width: 2),
                 ),
               ),
@@ -110,11 +175,11 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return _buildErrorState(snapshot.error.toString(), isTablet);
+                return _buildErrorState(snapshot.error.toString(), context);
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return _buildLoadingState(isTablet);
+                return _buildLoadingState(context);
               }
 
               final docs = snapshot.data?.docs ?? [];
@@ -130,16 +195,16 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                     }).toList();
 
               if (filtered.isEmpty) {
-                return _buildEmptyState(isTablet, _query.isNotEmpty);
+                return _buildEmptyState(context, _query.isNotEmpty);
               }
 
               return GridView.builder(
                 padding: EdgeInsets.all(padding),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: isTablet ? 4 : 2,
-                  crossAxisSpacing: padding,
-                  mainAxisSpacing: padding,
-                  childAspectRatio: isTablet ? 0.9 : 0.85,
+                  crossAxisCount: gridCount,
+                  crossAxisSpacing: gridSpacing,
+                  mainAxisSpacing: gridSpacing,
+                  childAspectRatio: _isMobile(context) ? 0.85 : 0.9,
                 ),
                 itemCount: filtered.length,
                 itemBuilder: (_, i) {
@@ -151,7 +216,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                     );
                   }
 
-                  return _buildCategoryCard(doc, data, isTablet);
+                  return _buildCategoryCard(doc, data, context);
                 },
               );
             },
@@ -164,19 +229,24 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   Widget _buildCategoryCard(
     DocumentSnapshot doc,
     Map<String, dynamic> data,
-    bool isTablet,
+    BuildContext context,
   ) {
     final name = data['name']?.toString() ?? 'Unnamed';
     final enabled = data['enabled'] as bool? ?? true;
+    final isTablet = _isTablet(context);
+    final cardPadding = _getCardPadding(context);
+    final cardRadius = _getCardRadius(context);
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(cardRadius),
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => _showUpdateDialog(doc, isTablet),
+        borderRadius: BorderRadius.circular(cardRadius),
+        onTap: () => _showUpdateDialog(doc, context),
         child: Padding(
-          padding: EdgeInsets.all(isTablet ? 24 : 16),
+          padding: EdgeInsets.all(cardPadding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -255,13 +325,14 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     );
   }
 
-  void _showUpdateDialog(DocumentSnapshot doc, bool isTablet) {
+  void _showUpdateDialog(DocumentSnapshot doc, BuildContext context) {
     final data = doc.data() as Map<String, dynamic>?;
     if (data == null) return;
 
     final editCtrl = TextEditingController(
       text: data['name']?.toString() ?? '',
     );
+    final isTablet = _isTablet(context);
 
     showDialog(
       context: context,
@@ -353,7 +424,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     ).then((_) => editCtrl.dispose());
   }
 
-  Widget _buildErrorState(String error, bool isTablet) {
+  Widget _buildErrorState(String error, BuildContext context) {
+    final isTablet = _isTablet(context);
     return Padding(
       padding: EdgeInsets.all(isTablet ? 32 : 24),
       child: Column(
@@ -401,7 +473,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     );
   }
 
-  Widget _buildLoadingState(bool isTablet) {
+  Widget _buildLoadingState(BuildContext context) {
+    final isTablet = _isTablet(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -418,7 +491,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     );
   }
 
-  Widget _buildEmptyState(bool isTablet, bool isSearch) {
+  Widget _buildEmptyState(BuildContext context, bool isSearch) {
+    final isTablet = _isTablet(context);
     return Padding(
       padding: EdgeInsets.all(isTablet ? 32 : 24),
       child: Column(
