@@ -1,0 +1,1 @@
+ /Users/mac/Downloads/Projects/Green_Basket/.dart_tool/flutter_build/d4061e7be745545c21d6046f935b0ad0/native_assets.json: 

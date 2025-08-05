@@ -26,11 +26,11 @@
 		</data>
 		<key>Modules/FirebaseCoreInternal.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo</key>
 		<data>
-		UKRVZcIoSFJqKaEnndDM3n1cUhY=
+		RX6LrGl2GCt929d1YfdaP4EpvHQ=
 		</data>
 		<key>Modules/FirebaseCoreInternal.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo</key>
 		<data>
-		Poxz4HwxYA8rKJaXU/J2KBX3Wq8=
+		OSlhjjuPUipynzXjz2DmAM+2bUQ=
 		</data>
 		<key>Modules/FirebaseCoreInternal.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
@@ -42,7 +42,7 @@
 		</data>
 		<key>Modules/FirebaseCoreInternal.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		yOhE3LJFX1kGY9bQgMfMt2SYZZ4=
+		hDQF3l9aq+dTVfDncKiRtY+95Nw=
 		</data>
 		<key>Modules/FirebaseCoreInternal.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<data>
@@ -54,7 +54,7 @@
 		</data>
 		<key>Modules/FirebaseCoreInternal.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		kLqTp3klwTX33lcb/69SvGjgpN8=
+		BY5kW2jFAdUf5XpIQ+ZrqMq+0qM=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -95,14 +95,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			M4x1wFil0TKmqCXGYUezj/eSdpdI+wNuivJ8Er0f/4M=
+			Ej2IE7C50YBungzwVPBdMDXUSi6Adiy9WuDKnPmGzpE=
 			</data>
 		</dict>
 		<key>Modules/FirebaseCoreInternal.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			PIAZ66IDDnpya2lQOSPtG0RJ7J7iDpPBLsGeLniBzrQ=
+			SU94MBpk3yUFlMTiKjjSo48uRUjFoZqB86zXZ9J0EGs=
 			</data>
 		</dict>
 		<key>Modules/FirebaseCoreInternal.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
@@ -123,7 +123,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ffyysZfUaGw1a+wFBP07W3yXElq3JODtJR2hMTAggx0=
+			/esrvTe/h7v+Zl0VRpGrTJ7Qi9XsXpCKzCd5AVH5SgU=
 			</data>
 		</dict>
 		<key>Modules/FirebaseCoreInternal.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
@@ -144,7 +144,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			cU1lEGUYYWdRajVU1xx1JTWq2GT+HG41I3izircC5rg=
+			l9ajO7l10sdtBTBI01M8E/9sdUUvfDN125kjxmVDJNI=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
